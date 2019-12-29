@@ -1,4 +1,5 @@
-﻿using SwissVoting.DAL.DB;
+﻿using Microsoft.EntityFrameworkCore;
+using SwissVoting.DAL.DB;
 using SwissVoting.Models;
 using System;
 using System.Collections.Generic;
@@ -9,20 +10,28 @@ namespace SwissVoting.DAL
 {
     public class SwissVotingRepo : ISwissVotingRepo
     {
-        public List<VoteCount> GetVoteCounts(int lawID)
+        public Dictionary<int, VoteCount> GetVotesByCanton()
         {
             using var db = new SwissContext();
+            using var connection = db.Database.GetDbConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = "select * from public.get_votes()";
+            connection.Open();
+            using var reader = command.ExecuteReader();
 
-            var voteCounts = from v in db.Votes
-                             where v.LawId == lawID
-                             select new VoteCount
-                             {
-                                 PlaceID = v.PlaceId,
-                                 For = v.For,
-                                 Against = v.Against
-                             };
+            var results = new Dictionary<int, VoteCount>();
 
-            return voteCounts.ToList();
+            if (reader.HasRows)
+                while (reader.Read())
+                    results.Add(reader.IsDBNull(0) ? 0 : reader.GetInt32(0), new VoteCount
+                    {
+                        For = reader.GetInt64(1),
+                        Against = reader.GetInt64(2)
+                    });
+
+            reader.Close();
+
+            return results;
         }
     }
 }

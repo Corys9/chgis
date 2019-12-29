@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace SwissVoting.Models
 {
     public class VoteCount
     {
-        public int PlaceID { get; set; }
-        public int For { get; set; }
-        public int Against { get; set; }
+        [JsonProperty("for")]
+        public long For { get; set; }
+
+        [JsonProperty("against")]
+        public long Against { get; set; }
     }
 }

@@ -22,8 +22,7 @@ namespace SwissVoting.API.Controllers
             _swissVotingRepo = swissVotingRepo;
         }
 
-        [HttpGet]
-        [Route("get-all-votes")]
-        public List<VoteCount> GetAllVotes(int lawID) => _swissVotingRepo.GetVoteCounts(lawID);
+        [HttpGet, Route("get-canton-votes")]
+        public Dictionary<int, VoteCount> GetVotesByCanton() => _swissVotingRepo.GetVotesByCanton();
     }
 }

@@ -78,3 +78,11 @@ body {
     font-size: 20px;
     font-variant: small-caps;
 }
+
+.votes-for {
+    color: green;
+}
+
+.votes-against {
+    color: red;
+}

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SwissVoting.DAL;
 
 namespace SwissVoting.API
@@ -32,7 +33,13 @@ namespace SwissVoting.API
                        .AllowAnyHeader();
             }));
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.DateFormatString = "yyyy-MM-dd";
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                });
 
             DAL.DB.SwissContext.DefaultConnectionString = Configuration.GetConnectionString("SwissConnectionString");
             services.AddScoped<ISwissVotingRepo, SwissVotingRepo>();

@@ -51,11 +51,12 @@
                     if (!votes)
                         return { color: color };
 
+                    var percentage = votes.for / (votes.for + votes.against) * 100;
                     
                     if (votes.for > votes.against)
-                        color = "rgb(0, 50, 0)";
+                        color = "hsl(100, " + (100 - percentage) + "%, " + (100 - percentage) + "%)";
                     else if (votes.against > votes.for)
-                        color = "rgb(50, 0, 0)";
+                        color = "hsl(0, " + percentage + "%, " + percentage + "%)";
 
                     return { color: color };
                 }

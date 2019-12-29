@@ -11,6 +11,7 @@
     o.Votes = null;
     o.Cantons = [];
     o.CantonLayer = null;
+    o.DrawnLayers = null;
 
     o.Init = function () {
         // Leaflet config
@@ -21,8 +22,8 @@
         });
 
         // Leaflet.Draw config
-        var drawLayers = new L.FeatureGroup();
-        o.Map.addLayer(drawLayers);
+        o.DrawnLayers = new L.FeatureGroup();
+        o.Map.addLayer(o.DrawnLayers);
         var drawOptions = {
             position: "topright",
             draw: {
@@ -31,7 +32,7 @@
                 }
             },
             edit: {
-                featureGroup: drawLayers,
+                featureGroup: o.DrawnLayers,
                 remove: true
             }
         };
@@ -40,7 +41,7 @@
         o.Map.addControl(drawControl);
 
         o.Map.on(L.Draw.Event.CREATED, function (e) {
-            drawLayers.addLayer(e.layer);
+            o.DrawnLayers.addLayer(e.layer);
         });
 
         o.Map.on('draw:created', function (e) {
@@ -130,6 +131,16 @@
 
             newLayer.addTo(o.Map);
             o.CantonLayer = newLayer;
+
+            // refresh drawn layers
+            o.DrawnLayers.eachLayer(function (layer) {
+                if (!(layer instanceof L.Polygon))
+                    return;
+
+                o.colorPolygon(layer);
+            });
+
+            //o.Map.fitBounds(newLayer.getBounds());
         });
     };
 
@@ -152,8 +163,6 @@
             polystring += layer._latlngs[0][i].lng + " " + layer._latlngs[0][i].lat + ",";
         polystring += layer._latlngs[0][0].lng + " " + layer._latlngs[0][0].lat;
 
-        console.log(layer);
-
         $.ajax({
             url: o.GetCustomVotesURL + "/" + o.CurrentLawID + "?polystring=" + polystring,
             contentType: "application/json",
@@ -168,11 +177,24 @@
                     color = "hsl(0, " + percentage + "%, " + percentage + "%)";
 
                 layer.setStyle({ color: color, opacity: 0.75 });
+                layer.bindTooltip(o.getCustomTooltipHtml(votes), { closeButton: false });
             },
             error: function (err) {
                 console.error(err);
             }
         });
+    };
+
+    o.getCustomTooltipHtml = function (votes) {
+        var html = "<div class=\"canton-name\">Custom region</div>";
+
+        if (votes) {
+            html += "<div class=\"votes-for\">For: " + votes.for + "</div>";
+            html += "<div class=\"votes-against\">Against: " + votes.against + "</div>";
+            html += "<div>" + (votes.for / (votes.for + votes.against) * 100).toFixed(2) + "% in favor.";
+        }
+
+        return html;
     };
 
     return o;

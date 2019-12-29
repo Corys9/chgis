@@ -12,12 +12,40 @@
     o.CantonLayer = null;
 
     o.Init = function () {
+        // Leaflet config
         o.Map = L.map("map", {
             center: new L.LatLng(46.6, 8.2),
             zoom: 8,
             loadingControl: true
         });
 
+        // Leaflet.Draw config
+        var drawLayers = new L.FeatureGroup();
+        o.Map.addLayer(drawLayers);
+        var drawOptions = {
+            position: "topright",
+            draw: {
+                polygon: {
+                    allowIntersection: false
+                }
+            },
+            edit: {
+                featureGroup: drawLayers,
+                remove: false
+            }
+        };
+
+        var drawControl = new L.Control.Draw(drawOptions);
+        o.Map.addControl(drawControl);
+
+        o.Map.on(L.Draw.Event.CREATED, function (e) {
+            var type = e.layerType,
+                layer = e.layer;
+
+            drawLayers.addLayer(layer);
+        });
+
+        // select first law in the list
         var firstLawID = $(".law")[0].id.substring(4);
         o.SelectLaw(firstLawID);
     };

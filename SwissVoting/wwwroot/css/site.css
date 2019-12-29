@@ -71,7 +71,7 @@ body {
 
 #map {
     width: 100%;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 160px);
 }
 
 .canton-name {
@@ -86,3 +86,49 @@ body {
 .votes-against {
     color: red;
 }
+
+#laws {
+    position: fixed;
+    left: 0;
+    top: 57px;
+    height: calc(100vh - 57px * 2);
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    z-index: 999999;
+    overflow-y: scroll;
+    background-color: white;
+}
+
+    #laws .law {
+        margin-bottom: 5px;
+        box-shadow: 0 8px 5px -5px rgb(128, 128, 128);
+        padding: 15px;
+        cursor: pointer;
+        user-select: none;
+        color: black;
+    }
+
+        #laws .law.active {
+            background-color: rgba(80, 239, 16, 0.15);
+            box-shadow: 0 8px 5px -5px rgb(80, 239, 16);
+        }
+
+        #laws .law:hover {
+            background-color: rgba(8, 210, 255, 0.15);
+            box-shadow: 0 8px 5px -5px rgb(20, 153, 252);
+        }
+
+        #laws .law .proposal {
+            font-style: italic;
+        }
+
+        #laws .law .owner {
+            font-variant: small-caps;
+            color: rgb(128, 128, 128);
+        }
+
+        #laws .law .date {
+            font-variant: small-caps;
+            color: rgb(20, 153, 252);
+        }

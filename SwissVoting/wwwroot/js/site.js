@@ -4,19 +4,39 @@
     o.CantonsURL = o.GeoServerURL + o.SharedFragment + "&typeName=ch-cantons";
     o.PlacesURL = o.GeoServerURL + o.SharedFragment + "&typeName=ch-places";
     o.ApiURL = "https://localhost:44388/";
-    o.GetCantonVotesURL = o.ApiURL + "votes/get-canton-votes";
+    o.GetCantonVotesURL = o.ApiURL + "votes/by-canton";
     o.Map = null;
-    o.CurrentLawID = 1;
+    o.CurrentLawID = 0;
     o.Votes = null;
     o.Cantons = [];
+    o.CantonLayer = null;
 
     o.Init = function () {
-        o.Map = L.map("map")
-            .setView([46.6, 8.2], 8);
+        o.Map = L.map("map", {
+            center: new L.LatLng(46.6, 8.2),
+            zoom: 8,
+            loadingControl: true
+        });
 
+        var firstLawID = $(".law")[0].id.substring(4);
+        o.SelectLaw(firstLawID);
+    };
+
+    o.SelectLaw = function (lawID) {
+        if (o.CurrentLawID && o.CurrentLawID !== lawID)
+            $("#law-" + o.CurrentLawID).removeClass("active");
+
+        o.CurrentLawID = lawID;
+        $("#law-" + lawID).addClass("active");
+
+        o.refreshMap();
+    };
+
+    // PRIVATE
+
+    o.refreshMap = function () {
         var getVotes = $.ajax({
-            url: o.GetCantonVotesURL,
-            data: o.CurrentLawID,
+            url: o.GetCantonVotesURL + "/" + o.CurrentLawID,
             success: function (data) {
                 o.Votes = data;
             },
@@ -36,7 +56,7 @@
         });
 
         $.when(getVotes, getCantons).done(function () {
-            var geoJsonLayer = new L.GeoJSON(o.Cantons.features, {
+            var newLayer = new L.GeoJSON(o.Cantons.features, {
                 onEachFeature: function (feature, layer) {
                     if (feature.properties && feature.properties.name_1)
                         layer.bindTooltip(o.getTooltipHtml(feature), { closeButton: false });
@@ -52,7 +72,7 @@
                         return { color: color };
 
                     var percentage = votes.for / (votes.for + votes.against) * 100;
-                    
+
                     if (votes.for > votes.against)
                         color = "hsl(100, " + (100 - percentage) + "%, " + (100 - percentage) + "%)";
                     else if (votes.against > votes.for)
@@ -60,17 +80,15 @@
 
                     return { color: color };
                 }
-            })
-                .addTo(o.Map);
+            });
+
+            if (o.CantonLayer)
+                o.Map.removeLayer(o.CantonLayer);
+
+            newLayer.addTo(o.Map);
+            o.CantonLayer = newLayer;
         });
-
-        /*$.get(o.PlacesURL, function (data) {
-            var geoJsonLayer = new L.GeoJSON(data.features)
-                .addTo(o.Map);
-        });*/
     };
-
-    // PRIVATE
 
     o.getTooltipHtml = function (feature) {
         var html = "<div class=\"canton-name\">" + feature.properties.name_1 + "</div>";

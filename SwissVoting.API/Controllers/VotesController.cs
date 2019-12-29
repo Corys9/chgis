@@ -11,18 +11,21 @@ namespace SwissVoting.API.Controllers
 {
     [ApiController]
     [Route("votes")]
-    public class SwissVotesController : ControllerBase
+    public class VotesController : ControllerBase
     {
-        private readonly ILogger<SwissVotesController> _logger;
+        private readonly ILogger<VotesController> _logger;
         private readonly ISwissVotingRepo _swissVotingRepo;
 
-        public SwissVotesController(ILogger<SwissVotesController> logger, ISwissVotingRepo swissVotingRepo)
+        public VotesController(
+            ILogger<VotesController> logger,
+            ISwissVotingRepo swissVotingRepo)
         {
             _logger = logger;
             _swissVotingRepo = swissVotingRepo;
         }
 
-        [HttpGet, Route("get-canton-votes")]
-        public Dictionary<int, VoteCount> GetVotesByCanton() => _swissVotingRepo.GetVotesByCanton();
+        [HttpGet, Route("by-canton/{lawID:int}")]
+        public Dictionary<int, VoteCount> GetVotesByCanton(int lawID)
+            => _swissVotingRepo.GetVotesByCanton(lawID);
     }
 }

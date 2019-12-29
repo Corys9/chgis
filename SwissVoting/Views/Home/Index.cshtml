@@ -1,4 +1,17 @@
-﻿<div id="map"></div>
+﻿@model SwissVoting.Models.HomeViewModel
+
+<div id="laws">
+    @foreach (var law in Model.Laws)
+    {
+        <div class="law" id="law-@law.ID" onclick="CH.SelectLaw(@law.ID);">
+            <div class="proposal">@law.Proposal</div>
+            <div class="owner">@law.Owner</div>
+            <div class="date">@law.FiledOn.ToString("yyyy MMM dd")</div>
+        </div>
+    }
+</div>
+
+<div id="map"></div>
 
 @section Scripts {
     <script>

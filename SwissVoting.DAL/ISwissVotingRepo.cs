@@ -6,6 +6,8 @@ namespace SwissVoting.DAL
 {
     public interface ISwissVotingRepo
     {
-        Dictionary<int, VoteCount> GetVotesByCanton();
+        Dictionary<int, VoteCount> GetVotesByCanton(int lawID);
+
+        List<Law> GetLaws();
     }
 }

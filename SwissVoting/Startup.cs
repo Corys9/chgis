@@ -23,6 +23,11 @@ namespace SwissVoting
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            services.AddHttpClient("chgisAPI", options =>
+            {
+                options.BaseAddress = new Uri(Configuration.GetValue<string>("ApiURL"));
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

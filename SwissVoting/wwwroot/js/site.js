@@ -5,6 +5,7 @@
     o.PlacesURL = o.GeoServerURL + o.SharedFragment + "&typeName=ch-places";
     o.ApiURL = "https://localhost:44388/";
     o.GetCantonVotesURL = o.ApiURL + "votes/by-canton";
+    o.GetCustomVotesURL = o.ApiURL + "votes/custom";
     o.Map = null;
     o.CurrentLawID = 0;
     o.Votes = null;
@@ -31,7 +32,7 @@
             },
             edit: {
                 featureGroup: drawLayers,
-                remove: false
+                remove: true
             }
         };
 
@@ -39,10 +40,24 @@
         o.Map.addControl(drawControl);
 
         o.Map.on(L.Draw.Event.CREATED, function (e) {
-            var type = e.layerType,
-                layer = e.layer;
+            drawLayers.addLayer(e.layer);
+        });
 
-            drawLayers.addLayer(layer);
+        o.Map.on('draw:created', function (e) {
+            if (e.layerType !== "polygon")
+                return;
+
+            o.colorPolygon(e.layer);
+        });
+
+        o.Map.on('draw:edited', function (e) {
+            var layers = e.layers;
+            layers.eachLayer(function (layer) {
+                if (!(layer instanceof L.Polygon))
+                    return;
+
+                o.colorPolygon(layer);
+            });
         });
 
         // select first law in the list
@@ -129,6 +144,35 @@
         }
 
         return html;
+    };
+
+    o.colorPolygon = function (layer) {
+        var polystring = "";
+        for (var i = 0; i < layer._latlngs[0].length; ++i)
+            polystring += layer._latlngs[0][i].lng + " " + layer._latlngs[0][i].lat + ",";
+        polystring += layer._latlngs[0][0].lng + " " + layer._latlngs[0][0].lat;
+
+        console.log(layer);
+
+        $.ajax({
+            url: o.GetCustomVotesURL + "/" + o.CurrentLawID + "?polystring=" + polystring,
+            contentType: "application/json",
+            dataType: "json",
+            success: function (votes) {
+                var color = "yellow";
+                var percentage = votes.for / (votes.for + votes.against) * 100;
+
+                if (votes.for > votes.against)
+                    color = "hsl(100, " + (100 - percentage) + "%, " + (100 - percentage) + "%)";
+                else if (votes.against > votes.for)
+                    color = "hsl(0, " + percentage + "%, " + percentage + "%)";
+
+                layer.setStyle({ color: color, opacity: 0.75 });
+            },
+            error: function (err) {
+                console.error(err);
+            }
+        });
     };
 
     return o;

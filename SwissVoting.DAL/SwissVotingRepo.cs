@@ -36,6 +36,31 @@ namespace SwissVoting.DAL
             return results;
         }
 
+        public VoteCount GetVotesCustom(int lawID, string polystring)
+        {
+            using var db = new SwissContext();
+            using var connection = db.Database.GetDbConnection();
+            using var command = connection.CreateCommand();
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+            command.CommandText = $"select * from public.get_votes_custom({lawID}, '{polystring}')";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+            connection.Open();
+            using var reader = command.ExecuteReader();
+
+            var result = new VoteCount();
+
+            if (reader.HasRows)
+            {
+                reader.Read();
+                result.For = reader.IsDBNull(0) ? 0 : reader.GetInt64(0);
+                result.Against = reader.IsDBNull(1) ? 0 : reader.GetInt64(1);
+            }
+
+            reader.Close();
+
+            return result;
+        }
+
         public List<Law> GetLaws()
         {
             using var db = new SwissContext();
